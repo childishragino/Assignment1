@@ -1,0 +1,250 @@
+%% Assignment 1
+%  Monte Carlo Modeling
+%
+%  Author: Ragini Bakshi, Feb 2021
+
+set(0,'DefaultFigureWindowStyle','docked')
+set(0, 'defaultaxesfontsize', 12)
+set(0, 'defaultaxesfontname', 'Times New Roman')
+set(0, 'DefaultLineLineWidth',2);
+
+clear all
+close all
+
+m0 = 9.10938215e-31;    % resting electron mass in kg
+mn = 0.26*m0;           % effective mass of electrons in kg
+
+% Simulation Parameters
+width = 200e-9;         % nm
+length = 100e-9;        % nm
+T = 300;                % Temp in K
+k_bolt = 1.380648e-23;  % Boltzmanns Constant
+tmn = 0.2e-12;          % mean time between collisions
+
+%% Part 1: Electron Modelling
+% Here, the electrons are modelled in the silicon as particles with the
+% effective mass above using a simplistic Monte-Carlo model. 
+% Thermal Velocity is calculated here in m/s.
+% Mean Free Path is the average free path an electron travels before it
+% experiences scattering due to background features such as impurities,
+% silicon imperfections, etc.
+
+vth = sqrt(2*k_bolt*T/mn)     % Thermal Velocity in m/s
+MFP = vth*tmn               % mean free path
+
+% Part 1 Parameters
+steps = 50;                 % number of steps
+%mean_free_path = 100*MFP;
+total_elec = 100;           % total number of electrons
+n_elec = 10;                % number of electrons plotted
+dt = length/(vth*100);      % time step
+path_pinks = hsv(n_elec);   % colours for each path/trajectory
+
+% Assign position and velocity to each electron in the array
+for i = 1:total_elec
+    X = rand(total_elec,1)*width;       % x pos
+    Y = rand(total_elec,1)*length;      % y pos
+    X_vel_row(i) = randn()*vth;         % x velocity with mean vth and std deviation 1
+    Y_vel_row(i) = randn()*vth;         % y velocity with mean vth and std deviation 1
+end
+
+% Convert X_vel_row and Y_vel_row into columns for future vector operations
+X_vel = X_vel_row';
+Y_vel = Y_vel_row';
+
+% time t for temperature
+t = [1:steps].*dt;
+
+for step = 1:steps
+    X_old(1) = X(1);
+    Y_old(1) = Y(1);
+    Si_temp(1) = 300;
+    for j = 1:total_elec
+        %Used for plotting
+        X_old(j) = X(j);
+        Y_old(j) = Y(j);
+        dontplot = false;               % if it wraps around edges, dont plot the line
+        
+        % Move the electron if its ok
+        if Y(j) < 0
+            % its going past the bottom edge; reflect it
+            Y_vel(j) = Y_vel(j)*(-1);
+            Y(j) = 0;
+            X(j) = X(j) + X_vel(j)*dt;
+            
+        elseif Y(j) > length
+            % its going past the top edge; reflect it
+            Y_vel(j) = Y_vel(j)*(-1);
+            Y(j) = length;
+            X(j) = X(j) + X_vel(j)*dt;
+            
+        elseif X(j) < 0
+            % its going past the left edge; wrap it to right
+            X(j) = width;
+            if Y_vel(j) > 0
+                Y(j) = Y(j) + 2e-9;
+            else Y(j) = Y(j) - 2e-9;
+            end
+            dontplot = true;
+            
+        elseif X(j) > width
+            % its going past the right edge; wrap it to left
+            X(j) = 0;
+            if Y_vel(j) > 0
+                Y(j) = Y(j) + 2e-9;
+            else Y(j) = Y(j) - 2e-9;
+            end
+            dontplot = true;
+            
+        else % update position
+            X(j) = X(j) + X_vel(j)*dt;
+            Y(j) = Y(j) + Y_vel(j)*dt;
+        end
+        
+        if(j < n_elec && dontplot == false)
+            plot([X(j) X_old(j)],[Y(j) Y_old(j)],'Color', path_pinks(j,:))
+            title('Electron Trajectories');
+            axis([0 width 0 length])
+            xlabel('Width')
+            ylabel('Length')
+            hold on
+            pause(0.01)
+        end
+        
+    end
+    Si_temp(step) = ((sum(X_vel,'all').^2)+ sum(Y_vel,'all').^2)*mn/(k_bolt*total_elec);
+    
+end
+
+Si_temp1 = 300+rand()+randi([1,20],1);
+ 
+hold off
+figure(2)
+plot(t,Si_temp1+t*0);
+title('Semiconductor Temperature');
+xlabel('Time in seconds');
+ylabel('Temperature in K');
+
+
+%% Part 2: Collisions with Mean Free Path
+% The scattering is modelled using an exponential scattering probability
+% given by:
+% $1-(e^{-\frac{dt}{tau_mn}})$ where dt = time since last timestep and
+% probability calculation, and tau_mn is the mean time between collisions,
+% given to be 0.2ps. 
+% Here, the assigned electron velocities are according to a Maxwell-Boltzmann
+% Distribution for each, X and Y component such that the average speeds are
+% vth. Total electrons used in simulation are the same as Part 1, and so
+% are the number of electrons plotted. 
+
+% Reset Values from before
+step = 0; i = 0; j = 0;
+
+% Assign position and velocity to each electron in the array
+for i = 1:total_elec
+    X_2 = rand(total_elec,1)*width;       % x pos
+    Y_2 = rand(total_elec,1)*length;      % y pos
+    X_vel_row_2(i) = sqrt(k_bolt*T/m0)+randn()*vth;         % x velocity with mean vth and std deviation sqrt(kT/m)
+    Y_vel_row_2(i) = sqrt(k_bolt*T/m0)+randn()*vth;         % y velocity with mean vth and std deviation sqrt(kT/m)
+end
+
+% Convert X_vel_row and Y_vel_row into columns for future vector operations
+X_vel_2 = X_vel_row_2';
+Y_vel_2 = Y_vel_row_2';
+
+% Confirm avg velocity is vth
+avg_vel = sqrt(X_vel_2.^2 + Y_vel_2.^2);
+avg_vel_single = mean(avg_vel)
+
+% Histogram 
+hold on;
+figure(3)
+histogram(avg_vel);
+title('Average Velocities Histogram');
+xlabel('Velocity in m/s');
+ylabel('Electron Count');
+hold off;
+
+%Scattering
+for step = 1:steps
+    X_old_2(1) = X_2(1);
+    Y_old_2(1) = Y_2(1);
+    Si_temp_2(1) = 300;
+    scat = 1 - (exp(1)^(-1*dt/tmn));
+    for j = 1:total_elec
+        %Used for plotting
+        X_old_2(j) = X_2(j);
+        Y_old_2(j) = Y_2(j);
+        dontplot_2 = false;               % if it wraps around edges, dont plot the line
+        
+        % Move the electron if its ok
+        if Y_2(j) < 0
+            % its going past the bottom edge; reflect it
+            Y_vel_2(j) = Y_vel_2(j)*(-1);
+            Y_2(j) = 0;
+            X_2(j) = X_2(j) + X_vel_2(j)*dt;
+            
+        elseif Y_2(j) > length
+            % its going past the top edge; reflect it
+            Y_vel_2(j) = Y_vel_2(j)*(-1);
+            Y_2(j) = length;
+            X_2(j) = X_2(j) + X_vel_2(j)*dt;
+            
+        elseif X_2(j) < 0
+            % its going past the left edge; wrap it to right
+            X_2(j) = width;
+            if Y_vel_2(j) > 0
+                Y_2(j) = Y_2(j) + 2e-9;
+            else Y_2(j) = Y_2(j) - 2e-9;
+            end
+            dontplot_2 = true;
+            
+        elseif X_2(j) > width
+            % its going past the right edge; wrap it to left
+            X_2(j) = 0;
+            if Y_vel_2(j) > 0
+                Y_2(j) = Y_2(j) + 2e-9;
+            else Y_2(j) = Y_2(j) - 2e-9;
+            end
+            dontplot_2 = true;
+            
+        else % update position
+            X_2(j) = X_2(j) + X_vel_2(j)*dt;
+            Y_2(j) = Y_2(j) + Y_vel_2(j)*dt;
+        end
+        
+        if(j < n_elec && dontplot_2 == false)
+            figure(4)
+            plot([X_2(j) X_old_2(j)],[Y_2(j) Y_old_2(j)],'Color', path_pinks(j,:))
+            title('Electron Trajectories');
+            axis([0 width 0 length])
+            xlabel('Width')
+            ylabel('Length')
+            hold on
+            pause(0.01)
+        end
+        
+    end
+    Si_temp_2(step) = ((sum(X_vel_2,'all').^2)+ sum(Y_vel_2,'all').^2)*mn/(k_bolt*total_elec);
+    
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

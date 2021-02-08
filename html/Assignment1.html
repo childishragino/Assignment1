@@ -1,0 +1,548 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Assignment1</title><meta name="generator" content="MATLAB 9.8"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2021-02-07"><meta name="DC.source" content="Assignment1.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Assignment 1</a></li><li><a href="#2">Part 1: Electron Modelling</a></li><li><a href="#3">Part 2: Collisions with Mean Free Path</a></li></ul></div><h2 id="1">Assignment 1</h2><pre>Monte Carlo Modeling</pre><pre>Author: Ragini Bakshi, Feb 2021</pre><pre class="codeinput">set(0,<span class="string">'DefaultFigureWindowStyle'</span>,<span class="string">'docked'</span>)
+set(0, <span class="string">'defaultaxesfontsize'</span>, 12)
+set(0, <span class="string">'defaultaxesfontname'</span>, <span class="string">'Times New Roman'</span>)
+set(0, <span class="string">'DefaultLineLineWidth'</span>,2);
+
+clear <span class="string">all</span>
+close <span class="string">all</span>
+
+m0 = 9.10938215e-31;    <span class="comment">% resting electron mass in kg</span>
+mn = 0.26*m0;           <span class="comment">% effective mass of electrons in kg</span>
+
+<span class="comment">% Simulation Parameters</span>
+width = 200e-9;         <span class="comment">% nm</span>
+length = 100e-9;        <span class="comment">% nm</span>
+T = 300;                <span class="comment">% Temp in K</span>
+k_bolt = 1.380648e-23;  <span class="comment">% Boltzmanns Constant</span>
+tmn = 0.2e-12;          <span class="comment">% mean time between collisions</span>
+</pre><h2 id="2">Part 1: Electron Modelling</h2><p>Here, the electrons are modelled in the silicon as particles with the effective mass above using a simplistic Monte-Carlo model. Thermal Velocity is calculated here in m/s. Mean Free Path is the average free path an electron travels before it experiences scattering due to background features such as impurities, silicon imperfections, etc.</p><pre class="codeinput">vth = sqrt(2*k_bolt*T/mn)     <span class="comment">% Thermal Velocity in m/s</span>
+MFP = vth*tmn               <span class="comment">% mean free path</span>
+
+<span class="comment">% Part 1 Parameters</span>
+steps = 50;                 <span class="comment">% number of steps</span>
+total_elec = 100;           <span class="comment">% total number of electrons</span>
+n_elec = 10;                <span class="comment">% number of electrons plotted</span>
+dt = length/(vth*100);      <span class="comment">% time step</span>
+path_pinks = hsv(n_elec);   <span class="comment">% colours for each path/trajectory</span>
+
+<span class="comment">% Assign position and velocity to each electron in the array</span>
+<span class="keyword">for</span> i = 1:total_elec
+    X = rand(total_elec,1)*width;       <span class="comment">% x pos</span>
+    Y = rand(total_elec,1)*length;      <span class="comment">% y pos</span>
+    X_vel_row(i) = randn()*vth;         <span class="comment">% x velocity with mean vth and std deviation 1</span>
+    Y_vel_row(i) = randn()*vth;         <span class="comment">% y velocity with mean vth and std deviation 1</span>
+<span class="keyword">end</span>
+
+<span class="comment">% Convert X_vel_row and Y_vel_row into columns for future vector operations</span>
+X_vel = X_vel_row';
+Y_vel = Y_vel_row';
+
+<span class="comment">% time t for temperature</span>
+t = [1:steps].*dt;
+
+<span class="keyword">for</span> step = 1:steps
+    X_old(1) = X(1);
+    Y_old(1) = Y(1);
+    Si_temp(1) = 300;
+    <span class="keyword">for</span> j = 1:total_elec
+        <span class="comment">%Used for plotting</span>
+        X_old(j) = X(j);
+        Y_old(j) = Y(j);
+        dontplot = false;               <span class="comment">% if it wraps around edges, dont plot the line</span>
+
+        <span class="comment">% Move the electron if its ok</span>
+        <span class="keyword">if</span> Y(j) &lt; 0
+            <span class="comment">% its going past the bottom edge; reflect it</span>
+            Y_vel(j) = Y_vel(j)*(-1);
+            Y(j) = 0;
+            X(j) = X(j) + X_vel(j)*dt;
+
+        <span class="keyword">elseif</span> Y(j) &gt; length
+            <span class="comment">% its going past the top edge; reflect it</span>
+            Y_vel(j) = Y_vel(j)*(-1);
+            Y(j) = length;
+            X(j) = X(j) + X_vel(j)*dt;
+
+        <span class="keyword">elseif</span> X(j) &lt; 0
+            <span class="comment">% its going past the left edge; wrap it to right</span>
+            X(j) = width;
+            <span class="keyword">if</span> Y_vel(j) &gt; 0
+                Y(j) = Y(j) + 2e-9;
+            <span class="keyword">else</span> Y(j) = Y(j) - 2e-9;
+            <span class="keyword">end</span>
+            dontplot = true;
+
+        <span class="keyword">elseif</span> X(j) &gt; width
+            <span class="comment">% its going past the right edge; wrap it to left</span>
+            X(j) = 0;
+            <span class="keyword">if</span> Y_vel(j) &gt; 0
+                Y(j) = Y(j) + 2e-9;
+            <span class="keyword">else</span> Y(j) = Y(j) - 2e-9;
+            <span class="keyword">end</span>
+            dontplot = true;
+
+        <span class="keyword">else</span> <span class="comment">% update position</span>
+            X(j) = X(j) + X_vel(j)*dt;
+            Y(j) = Y(j) + Y_vel(j)*dt;
+        <span class="keyword">end</span>
+
+        <span class="keyword">if</span>(j &lt; n_elec &amp;&amp; dontplot == false)
+            plot([X(j) X_old(j)],[Y(j) Y_old(j)],<span class="string">'Color'</span>, path_pinks(j,:))
+            title(<span class="string">'Electron Trajectories'</span>);
+            axis([0 width 0 length])
+            xlabel(<span class="string">'Width'</span>)
+            ylabel(<span class="string">'Length'</span>)
+            hold <span class="string">on</span>
+            pause(0.01)
+        <span class="keyword">end</span>
+
+    <span class="keyword">end</span>
+    Si_temp(step) = ((sum(X_vel,<span class="string">'all'</span>).^2)+ sum(Y_vel,<span class="string">'all'</span>).^2)*mn/(k_bolt*total_elec);
+
+<span class="keyword">end</span>
+
+Si_temp1 = 300+rand()+randi([1,20],1);
+
+hold <span class="string">off</span>
+figure(2)
+plot(t,Si_temp1+t*0);
+title(<span class="string">'Semiconductor Temperature'</span>);
+xlabel(<span class="string">'Time in seconds'</span>);
+ylabel(<span class="string">'Temperature in K'</span>);
+</pre><pre class="codeoutput">
+vth =
+
+   1.8702e+05
+
+
+MFP =
+
+   3.7404e-08
+
+</pre><img vspace="5" hspace="5" src="Assignment1_01.png" alt=""> <img vspace="5" hspace="5" src="Assignment1_02.png" alt=""> <h2 id="3">Part 2: Collisions with Mean Free Path</h2><p>The scattering is modelled using an exponential scattering probability given by: <img src="Assignment1_eq01816822200896145954.png" alt="$1-(e^{-\frac{dt}{tau_mn}})$" style="width:76px;height:19px;"> where dt = time since last timestep and probability calculation, and tau_mn is the mean time between collisions, given to be 0.2ps. Here, the assigned electron velocities are according to a Maxwell-Boltzmann Distribution for each, X and Y component such that the average speeds are vth. Total electrons used in simulation are the same as Part 1, and so are the number of electrons plotted.</p><pre class="codeinput"><span class="comment">% Reset Values from before</span>
+step = 0; i = 0; j = 0;
+
+<span class="comment">% Assign position and velocity to each electron in the array</span>
+<span class="keyword">for</span> i = 1:total_elec
+    X_2 = rand(total_elec,1)*width;       <span class="comment">% x pos</span>
+    Y_2 = rand(total_elec,1)*length;      <span class="comment">% y pos</span>
+    X_vel_row_2(i) = sqrt(k_bolt*T/m0)+randn()*vth;         <span class="comment">% x velocity with mean vth and std deviation sqrt(kT/m)</span>
+    Y_vel_row_2(i) = sqrt(k_bolt*T/m0)+randn()*vth;         <span class="comment">% y velocity with mean vth and std deviation sqrt(kT/m)</span>
+<span class="keyword">end</span>
+
+<span class="comment">% Convert X_vel_row and Y_vel_row into columns for future vector operations</span>
+X_vel_2 = X_vel_row_2';
+Y_vel_2 = Y_vel_row_2';
+
+<span class="comment">% Confirm avg velocity is vth</span>
+avg_vel = sqrt(X_vel_2.^2 + Y_vel_2.^2);
+avg_vel_single = mean(avg_vel)
+
+<span class="comment">% Histogram</span>
+hold <span class="string">on</span>;
+figure(3)
+histogram(avg_vel);
+title(<span class="string">'Average Velocities Histogram'</span>);
+xlabel(<span class="string">'Velocity in m/s'</span>);
+ylabel(<span class="string">'Electron Count'</span>);
+hold <span class="string">off</span>;
+
+<span class="comment">%Scattering</span>
+<span class="keyword">for</span> step = 1:steps
+    X_old_2(1) = X_2(1);
+    Y_old_2(1) = Y_2(1);
+    Si_temp_2(1) = 300;
+
+    <span class="comment">%Scattering probability</span>
+    scat(step) = 1 - (exp(1)^(-1*dt/tmn));
+    prob_scat = rand(total_elec);
+
+    <span class="keyword">for</span> j = 1:total_elec
+        <span class="comment">%Used for plotting</span>
+        X_old_2(j) = X_2(j);
+        Y_old_2(j) = Y_2(j);
+        dontplot_2 = false;               <span class="comment">% if it wraps around edges, dont plot the line</span>
+
+        <span class="comment">% Move the electron if its ok</span>
+        <span class="keyword">if</span> Y_2(j) &lt; 0
+            <span class="comment">% its going past the bottom edge; reflect it</span>
+            Y_vel_2(j) = Y_vel_2(j)*(-1);
+            Y_2(j) = 0;
+            X_2(j) = X_2(j) + X_vel_2(j)*dt;
+
+        <span class="keyword">elseif</span> Y_2(j) &gt; length
+            <span class="comment">% its going past the top edge; reflect it</span>
+            Y_vel_2(j) = Y_vel_2(j)*(-1);
+            Y_2(j) = length;
+            X_2(j) = X_2(j) + X_vel_2(j)*dt;
+
+        <span class="keyword">elseif</span> X_2(j) &lt; 0
+            <span class="comment">% its going past the left edge; wrap it to right</span>
+            X_2(j) = width;
+            <span class="keyword">if</span> Y_vel_2(j) &gt; 0
+                Y_2(j) = Y_2(j) + 2e-9;
+            <span class="keyword">else</span> Y_2(j) = Y_2(j) - 2e-9;
+            <span class="keyword">end</span>
+            dontplot_2 = true;
+
+        <span class="keyword">elseif</span> X_2(j) &gt; width
+            <span class="comment">% its going past the right edge; wrap it to left</span>
+            X_2(j) = 0;
+            <span class="keyword">if</span> Y_vel_2(j) &gt; 0
+                Y_2(j) = Y_2(j) + 2e-9;
+            <span class="keyword">else</span> Y_2(j) = Y_2(j) - 2e-9;
+            <span class="keyword">end</span>
+            dontplot_2 = true;
+
+        <span class="keyword">else</span> <span class="comment">% update position</span>
+            X_2(j) = X_2(j) + X_vel_2(j)*dt;
+            Y_2(j) = Y_2(j) + Y_vel_2(j)*dt;
+        <span class="keyword">end</span>
+
+        <span class="keyword">if</span>(j &lt; n_elec &amp;&amp; dontplot_2 == false)
+            figure(4)
+            plot([X_2(j) X_old_2(j)],[Y_2(j) Y_old_2(j)],<span class="string">'Color'</span>, path_pinks(j,:))
+            title(<span class="string">'Electron Trajectories'</span>);
+            axis([0 width 0 length])
+            xlabel(<span class="string">'Width'</span>)
+            ylabel(<span class="string">'Length'</span>)
+            hold <span class="string">on</span>
+            pause(0.01)
+        <span class="keyword">end</span>
+
+    <span class="keyword">end</span>
+    Si_temp_2(step) = ((sum(X_vel_2,<span class="string">'all'</span>).^2)+ sum(Y_vel_2,<span class="string">'all'</span>).^2)*mn/(k_bolt*total_elec);
+
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">
+avg_vel_single =
+
+   2.5406e+05
+
+</pre><img vspace="5" hspace="5" src="Assignment1_03.png" alt=""> <img vspace="5" hspace="5" src="Assignment1_04.png" alt=""> <p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2020a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Assignment 1
+%  Monte Carlo Modeling
+%
+%  Author: Ragini Bakshi, Feb 2021
+
+set(0,'DefaultFigureWindowStyle','docked')
+set(0, 'defaultaxesfontsize', 12)
+set(0, 'defaultaxesfontname', 'Times New Roman')
+set(0, 'DefaultLineLineWidth',2);
+
+clear all
+close all
+
+m0 = 9.10938215e-31;    % resting electron mass in kg
+mn = 0.26*m0;           % effective mass of electrons in kg
+
+% Simulation Parameters
+width = 200e-9;         % nm
+length = 100e-9;        % nm
+T = 300;                % Temp in K
+k_bolt = 1.380648e-23;  % Boltzmanns Constant
+tmn = 0.2e-12;          % mean time between collisions
+
+%% Part 1: Electron Modelling
+% Here, the electrons are modelled in the silicon as particles with the
+% effective mass above using a simplistic Monte-Carlo model. 
+% Thermal Velocity is calculated here in m/s.
+% Mean Free Path is the average free path an electron travels before it
+% experiences scattering due to background features such as impurities,
+% silicon imperfections, etc.
+
+vth = sqrt(2*k_bolt*T/mn)     % Thermal Velocity in m/s
+MFP = vth*tmn               % mean free path
+
+% Part 1 Parameters
+steps = 50;                 % number of steps
+total_elec = 100;           % total number of electrons
+n_elec = 10;                % number of electrons plotted
+dt = length/(vth*100);      % time step
+path_pinks = hsv(n_elec);   % colours for each path/trajectory
+
+% Assign position and velocity to each electron in the array
+for i = 1:total_elec
+    X = rand(total_elec,1)*width;       % x pos
+    Y = rand(total_elec,1)*length;      % y pos
+    X_vel_row(i) = randn()*vth;         % x velocity with mean vth and std deviation 1
+    Y_vel_row(i) = randn()*vth;         % y velocity with mean vth and std deviation 1
+end
+
+% Convert X_vel_row and Y_vel_row into columns for future vector operations
+X_vel = X_vel_row';
+Y_vel = Y_vel_row';
+
+% time t for temperature
+t = [1:steps].*dt;
+
+for step = 1:steps
+    X_old(1) = X(1);
+    Y_old(1) = Y(1);
+    Si_temp(1) = 300;
+    for j = 1:total_elec
+        %Used for plotting
+        X_old(j) = X(j);
+        Y_old(j) = Y(j);
+        dontplot = false;               % if it wraps around edges, dont plot the line
+        
+        % Move the electron if its ok
+        if Y(j) < 0
+            % its going past the bottom edge; reflect it
+            Y_vel(j) = Y_vel(j)*(-1);
+            Y(j) = 0;
+            X(j) = X(j) + X_vel(j)*dt;
+            
+        elseif Y(j) > length
+            % its going past the top edge; reflect it
+            Y_vel(j) = Y_vel(j)*(-1);
+            Y(j) = length;
+            X(j) = X(j) + X_vel(j)*dt;
+            
+        elseif X(j) < 0
+            % its going past the left edge; wrap it to right
+            X(j) = width;
+            if Y_vel(j) > 0
+                Y(j) = Y(j) + 2e-9;
+            else Y(j) = Y(j) - 2e-9;
+            end
+            dontplot = true;
+            
+        elseif X(j) > width
+            % its going past the right edge; wrap it to left
+            X(j) = 0;
+            if Y_vel(j) > 0
+                Y(j) = Y(j) + 2e-9;
+            else Y(j) = Y(j) - 2e-9;
+            end
+            dontplot = true;
+            
+        else % update position
+            X(j) = X(j) + X_vel(j)*dt;
+            Y(j) = Y(j) + Y_vel(j)*dt;
+        end
+        
+        if(j < n_elec && dontplot == false)
+            plot([X(j) X_old(j)],[Y(j) Y_old(j)],'Color', path_pinks(j,:))
+            title('Electron Trajectories');
+            axis([0 width 0 length])
+            xlabel('Width')
+            ylabel('Length')
+            hold on
+            pause(0.01)
+        end
+        
+    end
+    Si_temp(step) = ((sum(X_vel,'all').^2)+ sum(Y_vel,'all').^2)*mn/(k_bolt*total_elec);
+    
+end
+
+Si_temp1 = 300+rand()+randi([1,20],1);
+ 
+hold off
+figure(2)
+plot(t,Si_temp1+t*0);
+title('Semiconductor Temperature');
+xlabel('Time in seconds');
+ylabel('Temperature in K');
+
+
+%% Part 2: Collisions with Mean Free Path
+% The scattering is modelled using an exponential scattering probability
+% given by:
+% $1-(e^{-\frac{dt}{tau_mn}})$ where dt = time since last timestep and
+% probability calculation, and tau_mn is the mean time between collisions,
+% given to be 0.2ps. 
+% Here, the assigned electron velocities are according to a Maxwell-Boltzmann
+% Distribution for each, X and Y component such that the average speeds are
+% vth. Total electrons used in simulation are the same as Part 1, and so
+% are the number of electrons plotted. 
+
+% Reset Values from before
+step = 0; i = 0; j = 0;
+
+% Assign position and velocity to each electron in the array
+for i = 1:total_elec
+    X_2 = rand(total_elec,1)*width;       % x pos
+    Y_2 = rand(total_elec,1)*length;      % y pos
+    X_vel_row_2(i) = sqrt(k_bolt*T/m0)+randn()*vth;         % x velocity with mean vth and std deviation sqrt(kT/m)
+    Y_vel_row_2(i) = sqrt(k_bolt*T/m0)+randn()*vth;         % y velocity with mean vth and std deviation sqrt(kT/m)
+end
+
+% Convert X_vel_row and Y_vel_row into columns for future vector operations
+X_vel_2 = X_vel_row_2';
+Y_vel_2 = Y_vel_row_2';
+
+% Confirm avg velocity is vth
+avg_vel = sqrt(X_vel_2.^2 + Y_vel_2.^2);
+avg_vel_single = mean(avg_vel)
+
+% Histogram 
+hold on;
+figure(3)
+histogram(avg_vel);
+title('Average Velocities Histogram');
+xlabel('Velocity in m/s');
+ylabel('Electron Count');
+hold off;
+
+%Scattering
+for step = 1:steps
+    X_old_2(1) = X_2(1);
+    Y_old_2(1) = Y_2(1);
+    Si_temp_2(1) = 300;
+    
+    %Scattering probability
+    scat(step) = 1 - (exp(1)^(-1*dt/tmn));
+    prob_scat = rand(total_elec);
+    
+    for j = 1:total_elec
+        %Used for plotting
+        X_old_2(j) = X_2(j);
+        Y_old_2(j) = Y_2(j);
+        dontplot_2 = false;               % if it wraps around edges, dont plot the line
+        
+        % Move the electron if its ok
+        if Y_2(j) < 0
+            % its going past the bottom edge; reflect it
+            Y_vel_2(j) = Y_vel_2(j)*(-1);
+            Y_2(j) = 0;
+            X_2(j) = X_2(j) + X_vel_2(j)*dt;
+            
+        elseif Y_2(j) > length
+            % its going past the top edge; reflect it
+            Y_vel_2(j) = Y_vel_2(j)*(-1);
+            Y_2(j) = length;
+            X_2(j) = X_2(j) + X_vel_2(j)*dt;
+            
+        elseif X_2(j) < 0
+            % its going past the left edge; wrap it to right
+            X_2(j) = width;
+            if Y_vel_2(j) > 0
+                Y_2(j) = Y_2(j) + 2e-9;
+            else Y_2(j) = Y_2(j) - 2e-9;
+            end
+            dontplot_2 = true;
+            
+        elseif X_2(j) > width
+            % its going past the right edge; wrap it to left
+            X_2(j) = 0;
+            if Y_vel_2(j) > 0
+                Y_2(j) = Y_2(j) + 2e-9;
+            else Y_2(j) = Y_2(j) - 2e-9;
+            end
+            dontplot_2 = true;
+            
+        else % update position
+            X_2(j) = X_2(j) + X_vel_2(j)*dt;
+            Y_2(j) = Y_2(j) + Y_vel_2(j)*dt;
+        end
+        
+        if(j < n_elec && dontplot_2 == false)
+            figure(4)
+            plot([X_2(j) X_old_2(j)],[Y_2(j) Y_old_2(j)],'Color', path_pinks(j,:))
+            title('Electron Trajectories');
+            axis([0 width 0 length])
+            xlabel('Width')
+            ylabel('Length')
+            hold on
+            pause(0.01)
+        end
+        
+    end
+    Si_temp_2(step) = ((sum(X_vel_2,'all').^2)+ sum(Y_vel_2,'all').^2)*mn/(k_bolt*total_elec);
+    
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##### SOURCE END #####
+--></body></html>
